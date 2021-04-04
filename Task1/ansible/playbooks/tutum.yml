@@ -1,0 +1,17 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars/default.yml
+    
+  tasks:
+    - name: Create a tutum/hello-world container
+      docker_container:
+        name: "{{ default_container_name }}"
+        image: "{{ default_container_image }}"
+        volumes:
+          - /tutum
+        exposed_ports:
+          - 80
+        restart_policy:
+          - always

@@ -1,0 +1,5 @@
+---
+create_containers: 1
+default_container_name: tutum
+default_container_image: tutum/hello-word
+default_container_command: sleep 1d
