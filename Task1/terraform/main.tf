@@ -227,7 +227,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   tags = "${local.common_tags}"
 
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -i '${self.ipv4_address},' --private-key ${tls_private_key.sshkey.public_key_openssh} ../ansible/playbooks/tutum.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -i ${azurerm_public_ip.pip.ip_address} --private-key ${tls_private_key.sshkey.public_key_openssh} ../ansible/playbooks/tutum.yml"
     }
 
   depends_on = ["azurerm_storage_account.vmdiagnotics"]
