@@ -1,0 +1,2 @@
+CN=prod.company.ch,OU=IT,O=Company AG,L=Zurich,ST=Zurich,C=CH
+CN=test.company.ch,OU=IT,O=Company AG,L=Zurich,ST=Zurich,C=CH

@@ -1,0 +1,17 @@
+To build docker image
+docker build -t docker-flask .
+
+To run docker container
+docker run --rm --name docker-flask -p 8080:5000 docker-flask
+
+To run docker container in detach mode
+docker run -d --rm --name docker-flask -p 8080:5000 docker-flask
+
+docker tag local-image:tagname new-repo:tagname
+docker push new-repo:tagname
+
+To tag the build image with repo details
+docker build -t premkumardevops/devopshub-automation:latest .
+
+To push to docker hub
+docker push premkumardevops/devopshub-automation:latest

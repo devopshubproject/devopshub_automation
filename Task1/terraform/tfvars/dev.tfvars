@@ -6,7 +6,7 @@ app_name = "automation"
 ##### OS Image Values ###
 image_publisher = "Canonical"
 image_offer     = "UbuntuServer"
-image_sku = "20.04-LTS"
+image_sku = "18.04-LTS"
 image_version = "latest"
 
 ##### Disk Values #####
@@ -20,14 +20,14 @@ subnet_name = "default"
 ipconf_name = "dev-automation-ipconfig"
 
 ##### Login Values #####
-username = "admin"
+username = "devopshub"
 
 #######################################
 # NSG Rules for inbound values
 #######################################
 rule_name = [
   "remote_ssh",                           #0
-  "expose_container",                     #1
+  "expose_container"                      #1
 ]
 
 rule_description = [

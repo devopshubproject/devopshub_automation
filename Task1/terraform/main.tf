@@ -90,7 +90,7 @@ resource "azurerm_network_security_rule" "rules_inbound" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.rg.name}"
   network_security_group_name = "${azurerm_network_security_group.nsg.name}"
-  destination_application_security_group_ids = [azurerm_application_security_group.asg.id]
+  #destination_application_security_group_ids = [azurerm_application_security_group.asg.id]
 }
 
 ##################################################
@@ -131,7 +131,9 @@ resource "azurerm_public_ip" "pip" {
   location                     = "${var.location}"
   resource_group_name          = "${azurerm_resource_group.rg.name}"
   allocation_method            = "Dynamic"
+  sku                          = "Standard" 
   domain_name_label            = "${var.app_name}"
+  tags                = "${local.common_tags}"
 }
 
 ##################################################
@@ -168,7 +170,7 @@ resource "random_id" "randomId" {
 # Create storage account 
 ##################################################
 resource "azurerm_storage_account" "vmdiagnotics" {
-    name                        = "automation${random_id.randomId.hex}"
+    name                        = "auton${random_id.randomId.hex}"
     resource_group_name         = "${azurerm_resource_group.rg.name}"
     location                    = "${var.location}"
     account_tier                = "Standard"
@@ -196,7 +198,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location            = "${azurerm_resource_group.rg.location}"
   size                = "${var.vm_size}"
   network_interface_ids = ["${azurerm_network_interface.nic.id}"]
-  admin_username      = "${var.username}"
+  #admin_username      = "${var.username}"
   
   os_disk {
     name          = "${var.environment}-${var.app_name}-vm-osdisk"
@@ -212,7 +214,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
     computer_name  = "${var.environment}-${var.app_name}-vm"
-    #admin_username = "${var.username}"
+    admin_username = "${var.username}"
     #admin_password = "${var.password}"
     custom_data = filebase64("${path.module}/scripts/init.sh")
     disable_password_authentication = "${var.disable_password_authentication}"
@@ -227,7 +229,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
   tags = "${local.common_tags}"
 
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -i ${azurerm_public_ip.pip.ip_address} --private-key ${tls_private_key.sshkey.public_key_openssh} ../ansible/playbooks/tutum.yml"
+      command = "chmod 0600 ../ansible/playbooks/tutum.yml"
+    }
+
+  provisioner "local-exec" {
+      command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -i '${azurerm_public_ip.pip.ip_address},' --private-key ${tls_private_key.sshkey.public_key_openssh} ../ansible/playbooks/tutum.yml"
     }
 
   depends_on = ["azurerm_storage_account.vmdiagnotics"]

@@ -1,5 +1,5 @@
 resource_group_name  = "terraform-poc-rg"
 storage_account_name = "automationtfstate"
 container_name       = "devautomationstate"
-key                  = "tf.automation.dev.tfstate"
+key                  = "tf.automation.dev.kv.tfstate"
 access_key           = ""
