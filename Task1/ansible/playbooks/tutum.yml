@@ -1,10 +1,16 @@
 ---
-- hosts: all
-  become: true
+#- hosts: all
+- host: localhost
+  become: false
+  #become: true
+  gather_facts: false
   vars_files:
     - vars/default.yml
     
   tasks:
+    - name: Create inventory
+      add_host:
+      hostname: "{{ hostname }}"
     - name: Create a tutum/hello-world container
       docker_container:
         name: "{{ default_container_name }}"

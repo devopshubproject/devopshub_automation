@@ -66,16 +66,16 @@ resource "azurerm_key_vault" "kv" {
 resource "azurerm_key_vault_access_policy" "default_policy" {
   key_vault_id = "${azurerm_key_vault.kv.id}"
   tenant_id    = "${data.azurerm_client_config.current.tenant_id}"
-  object_id    = "${data.azurerm_client_config.current.object_id}"
-
+  #object_id    = "${data.azurerm_client_config.current.object_id}"
+  object_id    = "701ba6d9-b123-4124-9955-8ff6407e9fc7"
   lifecycle {
     create_before_destroy = true
   }
 
   key_permissions = "${var.kv-key-permissions}"
-  secret_permissions = "${var.kv-secret-permissions-full}"
-  certificate_permissions = "${var.kv-certificate-permissions-full}"
-  storage_permissions = "${var.kv-storage-permissions-full}"
+  secret_permissions = "${var.kv-secret-permissions}"
+  certificate_permissions = "${var.kv-certificate-permissions}"
+  storage_permissions = "${var.kv-storage-permissions}"
 }
 
 ##################################################
@@ -83,7 +83,7 @@ resource "azurerm_key_vault_access_policy" "default_policy" {
 ##################################################
 resource "azurerm_key_vault_access_policy" "policy" {
   for_each                = "${var.policies}"
-  key_vault_id            = azurerm_key_vault.key-vault.id
+  key_vault_id            = "${azurerm_key_vault.kv.id}"
   tenant_id               = lookup(each.value, "tenant_id")
   object_id               = lookup(each.value, "object_id")
   key_permissions         = lookup(each.value, "key_permissions")

@@ -103,7 +103,8 @@ resource "azurerm_network_security_rule" "rules_outbound" {
   direction                   = "Outbound"
   description                 = element(var.outbound_rule_description, count.index)
   source_port_range           = "*"
-  destination_port_range      = element(var.outbound_rule_portrange, count.index)
+  #destination_port_range      = element(var.outbound_rule_portrange, count.index)
+  destination_port_range      = "*"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
   protocol                    = "Tcp"
@@ -131,7 +132,7 @@ resource "azurerm_public_ip" "pip" {
   location                     = "${var.location}"
   resource_group_name          = "${azurerm_resource_group.rg.name}"
   allocation_method            = "Dynamic"
-  sku                          = "Standard" 
+  sku                          = "Basic" 
   domain_name_label            = "${var.app_name}"
   tags                = "${local.common_tags}"
 }
@@ -233,7 +234,15 @@ resource "azurerm_linux_virtual_machine" "vm" {
     }
 
   provisioner "local-exec" {
-      command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -i '${azurerm_public_ip.pip.ip_address},' --private-key ${tls_private_key.sshkey.public_key_openssh} ../ansible/playbooks/tutum.yml"
+      command = "cat "${tls_private_key.sshkey.public_key_openssh}" > file_id_rsa"
+    }
+
+  provisioner "local-exec" {
+      command = "chmod 0600 file_id_rsa"
+    }
+
+  provisioner "local-exec" {
+      command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -e hostname= ${azurerm_public_ip.pip.ip_address} --private-key ./file_id_rsa/ ../ansible/playbooks/tutum.yml"
     }
 
   depends_on = ["azurerm_storage_account.vmdiagnotics"]

@@ -27,7 +27,7 @@ variable "company" {
 variable "app_name" {
   type        = string
   description = "Application name of the project"
-  default     = "automation"
+  default     = "automation-vault"
 }
 
 
