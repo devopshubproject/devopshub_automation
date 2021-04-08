@@ -8,6 +8,7 @@ image_publisher = "Canonical"
 image_offer     = "UbuntuServer"
 image_sku = "18.04-LTS"
 image_version = "latest"
+count = "2"
 
 ##### Disk Values #####
 data_disk_size         = "100"

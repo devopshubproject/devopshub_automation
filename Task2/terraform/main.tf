@@ -142,7 +142,8 @@ resource "azurerm_public_ip" "pip" {
 ##################################################
 
 resource "azurerm_network_interface" "nic" {
-  name                      = "${var.environment}-${var.app_name}-nic"
+  count                     = "${var.count}"
+  name                      = "${var.environment}-${var.app_name}-${count.index}-nic"
   location                  = "${var.location}"
   resource_group_name       = "${azurerm_resource_group.rg.name}"
   #network_security_group_id = "${azurerm_network_security_group.nsg.id}"
@@ -189,20 +190,27 @@ resource "tls_private_key" "sshkey" {
   rsa_bits = 4096
 }
 
+resource "local_file" "private_key" {
+  content         = "${tls_private_key.sshkey.private_key_pem}"
+  filename        = "key.pem"
+  file_permission = "0600"
+}
+
 ##################################################
 # Create VM
 ##################################################
 
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "${var.environment}-${var.app_name}-vm"
+  count               = "${var.count}"
+  name                = "${var.environment}-${var.app_name}-${count.index}-vm"
   resource_group_name = "${azurerm_resource_group.rg.name}"
   location            = "${azurerm_resource_group.rg.location}"
   size                = "${var.vm_size}"
-  network_interface_ids = ["${azurerm_network_interface.nic.id}"]
+  network_interface_ids = [element(azurerm_network_interface.nic.*.id,count.index)]
   #admin_username      = "${var.username}"
   
   os_disk {
-    name          = "${var.environment}-${var.app_name}-vm-osdisk"
+    name          = "${var.environment}-${var.app_name}-${count.index}-vm-osdisk"
     caching       = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
@@ -214,7 +222,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "${var.image_version}"
   }
 
-    computer_name  = "${var.environment}-${var.app_name}-vm"
+    computer_name  = "${var.environment}-${var.app_name}-${count.index}-vm"
     admin_username = "${var.username}"
     #admin_password = "${var.password}"
     custom_data = filebase64("${path.module}/scripts/init.sh")
@@ -232,7 +240,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   provisioner "local-exec" {
       command = "chmod 0600 ../ansible/playbooks/tutum.yml"
     }
-
+/*
   provisioner "local-exec" {
       command = "cat "${tls_private_key.sshkey.public_key_openssh}" > file_id_rsa"
     }
@@ -240,11 +248,15 @@ resource "azurerm_linux_virtual_machine" "vm" {
   provisioner "local-exec" {
       command = "chmod 0600 file_id_rsa"
     }
+  
 
   provisioner "local-exec" {
-      command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -e hostname= ${azurerm_public_ip.pip.ip_address} --private-key ./file_id_rsa/ ../ansible/playbooks/tutum.yml"
+      command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.username} -e hostname= ${azurerm_public_ip.pip.ip_address} --private-key $key ../ansible/playbooks/tutum.yml"
+      environment = {
+        file = "${tls_private_key.sshkey.private_key_pem}"
     }
-
+    }
+*/
   depends_on = ["azurerm_storage_account.vmdiagnotics"]
 
 
@@ -255,7 +267,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
 ##################################################
 
 resource "azurerm_managed_disk" "disk" {
-  name                 = "${var.app_name}-pssd-datadisk"
+  count                = "${var.count}"
+  name                 = "${var.app_name}-pssd-${count.index}-datadisk"
   location             = "${var.location}"
   resource_group_name  = "${azurerm_resource_group.rg.name}"
   storage_account_type = "${var.data_disk_type}"
@@ -264,8 +277,8 @@ resource "azurerm_managed_disk" "disk" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "mount_data_disk" {
-  virtual_machine_id = "${azurerm_linux_virtual_machine.vm.id}"
-  managed_disk_id    = "${azurerm_managed_disk.disk.id}"
-  lun                = "10"
+  virtual_machine_id = "${azurerm_linux_virtual_machine.vm.*.id[count.index]}"
+  managed_disk_id    = "${azurerm_managed_disk.disk.*.id[count.index]}"
+  lun                = "${count.index} + 10"
   caching            = "None"
 }

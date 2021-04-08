@@ -30,6 +30,10 @@ variable "app_name" {
 }
 
 #### VM Details ####
+varialbe "count" {
+  type        = string
+  description = "No. of vm resource"
+}
 variable "vm_size" {
   type        = string
   description = "The Size for vm resource"
